@@ -8,6 +8,7 @@ import glm_.glm
 import glm_.vec2.Vec2d
 import glm_.vec3.Vec3
 import nedikov.utils.Camera.Movement.*
+import java.lang.Math.PI
 
 /**
  * Created by GBarbieri on 27.04.2017.
@@ -20,7 +21,7 @@ class Camera(
     val position: Vec3 = Vec3(),
     var worldUp: Vec3 = Vec3(0f, 1f, 0f),
     //  Eular Angles
-    var yaw: Float = -90f,
+    var yaw: Float = (-90f).rad,
     var pitch: Float = 0f) {
 
     //  Camera Attributes
@@ -29,12 +30,12 @@ class Camera(
     var right = Vec3()
     //  Camera options
     var movementSpeed = 2.5f
-    var mouseSensitivity = 0.5f
+    var mouseSensitivity = 0.01f
     var zoom = 45f
 
-    /** Constructor with scalar values  */
-    constructor(posX: Float, posY: Float, posZ: Float, upX: Float, upY: Float, upZ: Float, yaw: Float, pitch: Float) :
-            this(Vec3(posX, posY, posZ), Vec3(upX, upY, upZ), yaw, pitch)
+    private val pitchConstaint: Float = (PI / 2 - 0.1).f
+
+    val cursor = Cursor()
 
     init {
         updateCameraVectors()
@@ -58,10 +59,8 @@ class Camera(
     }
 
     /** Processes input received from a mouse input system. Expects the offset value in both the x and y direction. */
-    infix fun processMouseMovement(offset: Vec2d) = processMouseMovement(offset, true)
 
-    fun processMouseMovement(offset: Vec2d, constrainPitch: Boolean = true) {
-
+    private fun processMouseMovement(offset: Vec2d, constrainPitch: Boolean = true) {
         val x = offset.x * mouseSensitivity
         val y = offset.y * mouseSensitivity
 
@@ -69,8 +68,9 @@ class Camera(
         pitch += y.f
 
         // Make sure that when pitch is out of bounds, screen doesn't get flipped
-        if (constrainPitch)
-            pitch = glm.clamp(pitch, -89f, 89f)
+        if (constrainPitch) {
+            pitch = glm.clamp(pitch, -pitchConstaint, pitchConstaint)
+        }
 
         // Update Front, Right and Up Vectors using the updated Eular angles
         updateCameraVectors()
@@ -79,8 +79,9 @@ class Camera(
     /** Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis    */
     fun processMouseScroll(yOffset: Float) {
 
-        if (zoom in 1f..45f)
+        if (zoom in 1f..45f) {
             zoom -= yOffset
+        }
 
         zoom = glm.clamp(zoom, 1f, 45f)
     }
@@ -89,13 +90,36 @@ class Camera(
     fun updateCameraVectors() {
         // Calculate the new Front vector
         front.put(
-            x = yaw.rad.cos * pitch.rad.cos,
-            y = pitch.rad.sin,
-            z = yaw.rad.sin * pitch.rad.cos).normalizeAssign()
+            x = yaw.cos * pitch.cos,
+            y = pitch.sin,
+            z = yaw.sin * pitch.cos
+        ).normalizeAssign()
         /*  Also re-calculate the Right and Up vector, by taking care to normalize the vectors, because their length
             gets closer to 0 the more you look up or down which results in slower movement.         */
         right put (front cross worldUp).normalizeAssign()
         up put (right cross front).normalizeAssign()
+    }
+
+    fun mouseCallback(pos: Vec2d) {
+        cursor.update(pos)
+        processMouseMovement(cursor.offset)
+    }
+
+    inner class Cursor {
+        private val last = Vec2d()
+        val offset = Vec2d()
+
+        private var firstMouse = true
+
+        fun update(pos: Vec2d) {
+            if (firstMouse) {
+                last.put(pos)
+                firstMouse = false
+            }
+
+            offset.put(pos.x - last.x, last.y - pos.y) *= 0.1
+            last.put(pos)
+        }
     }
 
     enum class Movement { Forward, Backward, Left, Right }

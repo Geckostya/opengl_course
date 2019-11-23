@@ -1,14 +1,36 @@
 package nedikov.utils
 
 import glm_.f
-import nedikov.program.camera
+import nedikov.utils.Camera.Movement.*
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL
 import uno.glfw.GlfwWindow
 import uno.glfw.glfw
 
-class MyWindow(title: String, private val cursorController: CursorController) {
-    private val window: GlfwWindow = initWindow(title, cursorController)
+class MyWindow(title: String, private val camera: Camera) {
+    init {
+        with(glfw) {
+            init()
+            windowHint {
+                context.version = "3.3"
+                profile = "core"
+            }
+        }
+    }
+
+    private val window: GlfwWindow = GlfwWindow(windowSize, title).apply {
+        makeContextCurrent()
+        show()
+        framebufferSizeCallback = { size -> gln.glViewport(size) }
+
+        cursorPosCallback = camera::mouseCallback
+        scrollCallback = { offset -> camera.processMouseScroll(offset.y.f) }
+
+        cursor = GlfwWindow.Cursor.Disabled
+
+    }.also {
+        GL.createCapabilities()
+    }
 
     var deltaTime = 0f    // time between current frame and last frame
     var lastFrame = 0f
@@ -18,31 +40,6 @@ class MyWindow(title: String, private val cursorController: CursorController) {
 
     val aspect: Float
         get() = window.aspect
-
-    private fun initWindow(title: String, cursorController: CursorController): GlfwWindow {
-        with(glfw) {
-            init()
-            windowHint {
-                context.version = "3.3"
-                profile = "core"
-            }
-        }
-
-        return GlfwWindow(windowSize, title).apply {
-            makeContextCurrent()
-            show()
-            framebufferSizeCallback = { size -> gln.glViewport(size) }
-
-            cursorPosCallback = cursorController::mouseCallback
-            scrollCallback = { offset -> cursorController.camera.processMouseScroll(offset.y.f) }
-
-            cursor = GlfwWindow.Cursor.Disabled
-
-        }.also {
-            GL.createCapabilities()
-        }
-    }
-
 
     fun end() {
         window.destroy()
@@ -63,10 +60,10 @@ class MyWindow(title: String, private val cursorController: CursorController) {
         with(window) {
             if (pressed(GLFW.GLFW_KEY_ESCAPE)) close = true
 
-            if (pressed(GLFW.GLFW_KEY_W)) camera.processKeyboard(Camera.Movement.Forward, deltaTime)
-            if (pressed(GLFW.GLFW_KEY_S)) camera.processKeyboard(Camera.Movement.Backward, deltaTime)
-            if (pressed(GLFW.GLFW_KEY_A)) camera.processKeyboard(Camera.Movement.Left, deltaTime)
-            if (pressed(GLFW.GLFW_KEY_D)) camera.processKeyboard(Camera.Movement.Right, deltaTime)
+            if (pressed(GLFW.GLFW_KEY_W)) camera.processKeyboard(Forward, deltaTime)
+            if (pressed(GLFW.GLFW_KEY_S)) camera.processKeyboard(Backward, deltaTime)
+            if (pressed(GLFW.GLFW_KEY_A)) camera.processKeyboard(Left, deltaTime)
+            if (pressed(GLFW.GLFW_KEY_D)) camera.processKeyboard(Right, deltaTime)
         }
     }
 

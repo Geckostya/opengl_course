@@ -14,8 +14,6 @@ import gln.uniform.glUniform3f
 import gln.vertexArray.glEnableVertexAttribArray
 import gln.vertexArray.glVertexAttribPointer
 import nedikov.utils.*
-import nedikov.utils.Camera.Movement.*
-import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL20.glGetUniformLocation
@@ -38,7 +36,7 @@ val camera = Camera(position = Vec3(0f, 0f, 3f))
 
 private class BasicLightingDiffuse {
 
-    val window = MyWindow("Basic Lighting Diffuse", CursorController(camera))
+    val window = MyWindow("Basic Lighting Diffuse", camera)
 
     val lighting = Lighting()
     val lamp = Lamp()
@@ -86,7 +84,7 @@ private class BasicLightingDiffuse {
         val lgtPos = glGetUniformLocation(name, "lightPos")
     }
 
-    inner class Lamp() : Model("shaders/_1", "lamp")
+    inner class Lamp : Model("shaders/_1", "lamp")
 
     fun run() {
 
