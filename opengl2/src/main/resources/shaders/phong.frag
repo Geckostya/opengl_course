@@ -41,6 +41,15 @@ vec3 light() {
 }
 
 void main() {
-    fragColor = vec4(light() * u_objectColor , 0.1);
-//    fragColor = texture(u_noise, TexCoord);
+    vec4 noise = texture(u_noise, TexCoord);
+
+    float revTime = 1 - u_time;
+
+    if (noise.x < revTime) discard;
+
+    float border = 0.1;
+    float dissolve = 1 - (clamp(noise.x, revTime, revTime + border) - revTime) / border;
+    vec3 dissolveLight = vec3(0, 1, 1);
+
+    fragColor = vec4(mix(light() * u_objectColor, dissolveLight, dissolve), 1);
 }

@@ -19,8 +19,7 @@ import nedikov.camera.FreeCamera
 import nedikov.utils.*
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL12
-import org.lwjgl.opengl.GL13.GL_TEXTURE0
-import org.lwjgl.opengl.GL13.glActiveTexture
+import org.lwjgl.opengl.GL13.*
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL20.glGetUniformLocation
@@ -28,6 +27,7 @@ import org.lwjgl.opengl.GL30.*
 import uno.buffer.destroyBuf
 import uno.buffer.intBufferBig
 import uno.buffer.use
+import uno.glfw.glfw
 import uno.glsl.glDeletePrograms
 import uno.glsl.glUseProgram
 
@@ -115,6 +115,7 @@ private class BasicLightingDiffuse {
         val lgtCol  = glGetUniformLocation(name, "u_lightColor")
         val lgtPos  = glGetUniformLocation(name, "u_lightPos")
         val viewPos = glGetUniformLocation(name, "u_viewPos")
+        val time = glGetUniformLocation(name, "u_time")
         init {
             usingProgram(name) {
                 GL20.glUniform1i(
@@ -129,11 +130,14 @@ private class BasicLightingDiffuse {
 
     fun run() {
 
+        val startTime = glfw.time
+
         while (window.open) {
 
             window.processFrame()
 
             glEnable(GL_CULL_FACE)
+            glCullFace(GL_BACK)
 
             // render
             glClearColor(clearColor0)
@@ -146,6 +150,7 @@ private class BasicLightingDiffuse {
             // be sure to activate shader when setting uniforms/drawing objects
             glUseProgram(phong)
 
+            glUniform(phong.time, (glfw.time - startTime) * 0.3f)
             glUniform3f(phong.objCol, 1f, 0.5f, 0.31f)
             glUniform3f(phong.lgtCol, 1f)
             glUniform3f(phong.lgtPos, lightPos)
@@ -176,7 +181,7 @@ private class BasicLightingDiffuse {
             glUniform(lamp.model, model)
 
             glBindVertexArray(vao[VA.Light])
-            glDrawElements(GL_TRIANGLES, indicesCube.size, GL_UNSIGNED_INT)
+            glDrawElements(GL_TRIANGLES, indicesCube.size / 2, GL_UNSIGNED_INT)
 
             window.swapAndPoll()
         }
