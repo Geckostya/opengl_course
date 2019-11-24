@@ -1,13 +1,18 @@
 package nedikov.utils
 
 import glm_.f
-import nedikov.utils.Camera.Movement.*
+import glm_.vec2.Vec2d
+import nedikov.camera.FreeCamera
+import nedikov.camera.FreeCamera.Movement.*
+import nedikov.camera.MouseController
+import nedikov.camera.MouseEvent
+import nedikov.camera.MouseKey
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL
 import uno.glfw.GlfwWindow
 import uno.glfw.glfw
 
-class MyWindow(title: String, private val camera: Camera) {
+class MyWindow(title: String, private val camera: FreeCamera) {
     init {
         with(glfw) {
             init()
@@ -18,12 +23,21 @@ class MyWindow(title: String, private val camera: Camera) {
         }
     }
 
+    private val controller = object : MouseController() {
+        override fun processOffset(offset: Vec2d) {
+            if (hasDrag && press?.key == MouseKey.Left) {
+                camera.processMouseMovement(offset)
+            }
+        }
+    }
+
     private val window: GlfwWindow = GlfwWindow(windowSize, title).apply {
         makeContextCurrent()
         show()
         framebufferSizeCallback = { size -> gln.glViewport(size) }
 
-        cursorPosCallback = camera::mouseCallback
+        mouseButtonCallback = { button, action, mod -> controller.buttonAction(MouseEvent(button,action, mod))}
+        cursorPosCallback = controller::mouseMove
         scrollCallback = { offset -> camera.processMouseScroll(offset.y.f) }
 
         cursor = GlfwWindow.Cursor.Disabled
@@ -50,7 +64,6 @@ class MyWindow(title: String, private val camera: Camera) {
         window.swapBuffers()
         glfw.pollEvents()
     }
-
 
     fun processFrame() {
         val currentFrame = glfw.time

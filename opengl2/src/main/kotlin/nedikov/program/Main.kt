@@ -13,6 +13,7 @@ import gln.uniform.glUniform
 import gln.uniform.glUniform3f
 import gln.vertexArray.glEnableVertexAttribArray
 import gln.vertexArray.glVertexAttribPointer
+import nedikov.camera.FreeCamera
 import nedikov.utils.*
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15.*
@@ -32,7 +33,7 @@ fun main() {
 
 
 // camera
-val camera = Camera(position = Vec3(0f, 0f, 3f))
+val camera = FreeCamera(position = Vec3(0f, 0f, 3f))
 
 private class BasicLightingDiffuse {
 
