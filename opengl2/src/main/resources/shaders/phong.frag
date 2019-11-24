@@ -6,11 +6,15 @@ layout (location = FRAG_COLOR) out vec4 fragColor;
 
 in vec3 Normal;
 in vec3 FragPos;
+in vec2 TexCoord;
 
 uniform vec3 u_lightPos;
 uniform vec3 u_viewPos;
 uniform vec3 u_lightColor;
 uniform vec3 u_objectColor;
+
+uniform sampler2D u_noise;
+uniform float u_time;
 
 vec3 ambient() {
     float ambientStrength = 0.1f;
@@ -37,5 +41,6 @@ vec3 light() {
 }
 
 void main() {
-    fragColor = vec4(light() * u_objectColor, 1.0f);
+    fragColor = vec4(light() * u_objectColor , 0.1);
+//    fragColor = texture(u_noise, TexCoord);
 }

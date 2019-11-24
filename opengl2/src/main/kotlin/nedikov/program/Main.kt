@@ -4,11 +4,13 @@ import glm_.func.rad
 import glm_.glm
 import glm_.mat4x4.Mat4
 import glm_.vec3.Vec3
-import gln.buffer.glBindBuffer
-import gln.draw.glDrawArrays
+import gln.draw.glDrawElements
 import gln.get
 import gln.glClearColor
 import gln.glf.glf
+import gln.glf.semantic
+import gln.program.usingProgram
+import gln.texture.glBindTexture
 import gln.uniform.glUniform
 import gln.uniform.glUniform3f
 import gln.vertexArray.glEnableVertexAttribArray
@@ -16,11 +18,16 @@ import gln.vertexArray.glVertexAttribPointer
 import nedikov.camera.FreeCamera
 import nedikov.utils.*
 import org.lwjgl.opengl.GL11.*
+import org.lwjgl.opengl.GL12
+import org.lwjgl.opengl.GL13.GL_TEXTURE0
+import org.lwjgl.opengl.GL13.glActiveTexture
 import org.lwjgl.opengl.GL15.*
+import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL20.glGetUniformLocation
 import org.lwjgl.opengl.GL30.*
 import uno.buffer.destroyBuf
 import uno.buffer.intBufferBig
+import uno.buffer.use
 import uno.glsl.glDeletePrograms
 import uno.glsl.glUseProgram
 
@@ -42,10 +49,13 @@ private class BasicLightingDiffuse {
     val phong = Phong()
     val lamp = Lamp()
 
-    val vbo = intBufferBig(1)
+    val texture = intBufferBig(1)
 
     enum class VA { Cube, Light }
+    enum class Buffer { Vertex, Element }
 
+
+    val buffers = intBufferBig<Buffer>()
     val vao = intBufferBig<VA>()
 
     // lighting
@@ -55,35 +65,64 @@ private class BasicLightingDiffuse {
 
         glEnable(GL_DEPTH_TEST)
 
-
         glGenVertexArrays(vao)
 
         // first, configure the cube's VAO (and VBO)
-        glGenBuffers(vbo)
-
-        glBindBuffer(GL_ARRAY_BUFFER, vbo)
-        glBufferData(GL_ARRAY_BUFFER, verticesCube0, GL_STATIC_DRAW)
+        glGenBuffers(buffers)
 
         glBindVertexArray(vao[VA.Cube])
 
-        glVertexAttribPointer(glf.pos3_nor3)
-        glEnableVertexAttribArray(glf.pos3_nor3)
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[Buffer.Vertex])
+        glBufferData(GL_ARRAY_BUFFER, verticesCube, GL_STATIC_DRAW)
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[Buffer.Element])
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesCube, GL_STATIC_DRAW)
+
+        glVertexAttribPointer(glf.pos3_nor3_tc2)
+        glEnableVertexAttribArray(glf.pos3_nor3_tc2)
+
 
         // second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
         glBindVertexArray(vao[VA.Light])
 
-        glBindBuffer(GL_ARRAY_BUFFER, vbo)
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[Buffer.Vertex])
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[Buffer.Element])
 
         // note that we update the lamp's position attribute's stride to reflect the updated buffer data
-        glVertexAttribPointer(glf.pos3_nor3[0])
-        glEnableVertexAttribArray(glf.pos3_nor3[0])
+        glVertexAttribPointer(glf.pos3_nor3_tc2[0])
+        glEnableVertexAttribArray(glf.pos3_nor3_tc2[0])
+        glVertexAttribPointer(glf.pos3_nor3_tc2[2])
+        glEnableVertexAttribArray(glf.pos3_nor3_tc2[2])
+
+
+
+        // load and create a texture
+        glGenTextures(texture)
+        //  all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+        glBindTexture(GL_TEXTURE_2D, texture)
+
+        val image = readImage("textures/perlin_noise.png")
+        image.toBuffer().use {
+            // ByteBuffered images used BRG instead RGB
+            gln.texture.glTexImage2D(GL_RGB, image.width, image.height, GL12.GL_BGR, GL_UNSIGNED_BYTE, it)
+            glGenerateMipmap(GL_TEXTURE_2D)
+        } // byteBuffer automatically dispose with `use{ .. }`
+
     }
 
     inner class Phong : Shader("phong") {
-        val objCol = glGetUniformLocation(name, "u_objectColor")
-        val lgtCol = glGetUniformLocation(name, "u_lightColor")
-        val lgtPos = glGetUniformLocation(name, "u_lightPos")
+        val objCol  = glGetUniformLocation(name, "u_objectColor")
+        val lgtCol  = glGetUniformLocation(name, "u_lightColor")
+        val lgtPos  = glGetUniformLocation(name, "u_lightPos")
         val viewPos = glGetUniformLocation(name, "u_viewPos")
+        init {
+            usingProgram(name) {
+                GL20.glUniform1i(
+                    glGetUniformLocation(name, "u_noise"),
+                    semantic.sampler.DIFFUSE
+                )
+            }
+        }
     }
 
     inner class Lamp : Shader("lamp")
@@ -94,10 +133,15 @@ private class BasicLightingDiffuse {
 
             window.processFrame()
 
+            glEnable(GL_CULL_FACE)
 
             // render
             glClearColor(clearColor0)
             glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+
+            // bind Texture
+            glActiveTexture(GL_TEXTURE0 + semantic.sampler.DIFFUSE)
+            glBindTexture(GL_TEXTURE_2D, texture)
 
             // be sure to activate shader when setting uniforms/drawing objects
             glUseProgram(phong)
@@ -119,7 +163,7 @@ private class BasicLightingDiffuse {
 
             // render the cube
             glBindVertexArray(vao[VA.Cube])
-            glDrawArrays(GL_TRIANGLES, 36)
+            glDrawElements(GL_TRIANGLES, indicesCube.size, GL_UNSIGNED_INT)
 
             // also draw the lamp object
             glUseProgram(lamp)
@@ -132,7 +176,7 @@ private class BasicLightingDiffuse {
             glUniform(lamp.model, model)
 
             glBindVertexArray(vao[VA.Light])
-            glDrawArrays(GL_TRIANGLES, 36)
+            glDrawElements(GL_TRIANGLES, indicesCube.size, GL_UNSIGNED_INT)
 
             window.swapAndPoll()
         }
@@ -141,9 +185,10 @@ private class BasicLightingDiffuse {
     fun end() {
         glDeletePrograms(phong, lamp)
         glDeleteVertexArrays(vao)
-        glDeleteBuffers(vbo)
+        glDeleteBuffers(buffers)
+        glDeleteTextures(texture)
 
-        destroyBuf(vao, vbo)
+        destroyBuf(vao, buffers, texture)
 
         window.end()
     }
