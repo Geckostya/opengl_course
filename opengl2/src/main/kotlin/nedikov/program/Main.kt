@@ -36,9 +36,9 @@ val camera = Camera(position = Vec3(0f, 0f, 3f))
 
 private class BasicLightingDiffuse {
 
-    val window = MyWindow("Basic Lighting Diffuse", camera)
+    val window = MyWindow("Phong shader", camera)
 
-    val lighting = Lighting()
+    val phong = Phong()
     val lamp = Lamp()
 
     val vbo = intBufferBig(1)
@@ -78,13 +78,14 @@ private class BasicLightingDiffuse {
         glEnableVertexAttribArray(glf.pos3_nor3[0])
     }
 
-    inner class Lighting : Model("shaders/_2_1", "basic-lighting") {
-        val objCol = glGetUniformLocation(name, "objectColor")
-        val lgtCol = glGetUniformLocation(name, "lightColor")
-        val lgtPos = glGetUniformLocation(name, "lightPos")
+    inner class Phong : Shader("phong") {
+        val objCol = glGetUniformLocation(name, "u_objectColor")
+        val lgtCol = glGetUniformLocation(name, "u_lightColor")
+        val lgtPos = glGetUniformLocation(name, "u_lightPos")
+        val viewPos = glGetUniformLocation(name, "u_viewPos")
     }
 
-    inner class Lamp : Model("shaders/_1", "lamp")
+    inner class Lamp : Shader("lamp")
 
     fun run() {
 
@@ -98,21 +99,22 @@ private class BasicLightingDiffuse {
             glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
             // be sure to activate shader when setting uniforms/drawing objects
-            glUseProgram(lighting)
+            glUseProgram(phong)
 
-            glUniform3f(lighting.objCol, 1f, 0.5f, 0.31f)
-            glUniform3f(lighting.lgtCol, 1f)
-            glUniform3f(lighting.lgtPos, lightPos)
+            glUniform3f(phong.objCol, 1f, 0.5f, 0.31f)
+            glUniform3f(phong.lgtCol, 1f)
+            glUniform3f(phong.lgtPos, lightPos)
+            glUniform3f(phong.viewPos, camera.position)
 
             // view/projection transformations
             val projection = glm.perspective(camera.zoom.rad, window.aspect, 0.1f, 100f)
             val view = camera.viewMatrix
-            glUniform(lighting.proj, projection)
-            glUniform(lighting.view, view)
+            glUniform(phong.proj, projection)
+            glUniform(phong.view, view)
 
             // world transformation
             var model = Mat4()
-            glUniform(lighting.model, model)
+            glUniform(phong.model, model)
 
             // render the cube
             glBindVertexArray(vao[VA.Cube])
@@ -136,9 +138,7 @@ private class BasicLightingDiffuse {
     }
 
     fun end() {
-
-        //  optional: de-allocate all resources once they've outlived their purpose:
-        glDeletePrograms(lighting, lamp)
+        glDeletePrograms(phong, lamp)
         glDeleteVertexArrays(vao)
         glDeleteBuffers(vbo)
 
