@@ -1,5 +1,6 @@
 package nedikov.camera
 
+import glm_.f
 import glm_.func.rad
 import glm_.glm
 import glm_.vec2.Vec2d
@@ -25,7 +26,7 @@ abstract class Camera(
 
     /**  Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera
      *   defined ENUM (to abstract it from windowing systems)    */
-    abstract fun processKeyboard(direction: FreeCamera.Movement, deltaTime: Float)
+    abstract fun processKeyboard(direction: Movement, deltaTime: Float)
 
     /** Processes input received from a mouse input system. Expects the offset value in both the x and y direction. */
 
@@ -36,4 +37,12 @@ abstract class Camera(
 
     // Calculates the front vector from the Camera's (updated) Eular Angles
     abstract fun updateCameraVectors();
+
+    enum class Movement { Forward, Backward, Left, Right }
+
+
+    companion object {
+        @JvmStatic
+        protected val pitchConstraint: Float = (Math.PI / 2 - 0.1).f
+    }
 }

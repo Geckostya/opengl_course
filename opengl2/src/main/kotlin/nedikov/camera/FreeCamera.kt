@@ -7,6 +7,7 @@ import glm_.func.sin
 import glm_.glm
 import glm_.vec2.Vec2d
 import glm_.vec3.Vec3
+import nedikov.camera.Camera.Movement.*
 
 class FreeCamera(
     position: Vec3 = Vec3(),
@@ -24,16 +25,17 @@ class FreeCamera(
         val velocity = movementSpeed * deltaTime
 
         position += when (direction) {
-            Movement.Forward -> front * velocity
-            Movement.Backward -> -front * velocity
-            Movement.Left -> -right * velocity
-            Movement.Right -> right * velocity
+            Forward -> front * velocity
+            Backward -> -front * velocity
+            Left -> -right * velocity
+            Right -> right * velocity
         }
     }
 
     /** Processes input received from a mouse input system. Expects the offset value in both the x and y direction. */
 
     override fun processMouseMovement(offset: Vec2d) {
+        println(offset)
         val x = offset.x * mouseSensitivity
         val y = offset.y * mouseSensitivity
 
@@ -49,11 +51,7 @@ class FreeCamera(
 
     /** Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis    */
     override fun processMouseScroll(yOffset: Float) {
-        if (zoom in 1f..45f) {
-            zoom -= yOffset
-        }
-
-        zoom = glm.clamp(zoom, 1f, 45f)
+        zoom = glm.clamp(zoom - yOffset, 1f, 45f)
     }
 
     // Calculates the front vector from the Camera's (updated) Eular Angles
@@ -69,10 +67,4 @@ class FreeCamera(
         right put (front cross worldUp).normalizeAssign()
         up put (right cross front).normalizeAssign()
     }
-
-    companion object {
-        private val pitchConstraint: Float = (Math.PI / 2 - 0.1).f
-    }
-
-    enum class Movement { Forward, Backward, Left, Right }
 }

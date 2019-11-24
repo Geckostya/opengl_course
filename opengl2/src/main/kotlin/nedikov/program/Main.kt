@@ -15,7 +15,7 @@ import gln.uniform.glUniform
 import gln.uniform.glUniform3f
 import gln.vertexArray.glEnableVertexAttribArray
 import gln.vertexArray.glVertexAttribPointer
-import nedikov.camera.FreeCamera
+import nedikov.camera.OrbitCamera
 import nedikov.utils.*
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL12
@@ -40,7 +40,7 @@ fun main() {
 
 
 // camera
-val camera = FreeCamera(position = Vec3(0f, 0f, 3f))
+val camera = OrbitCamera();//position = Vec3(0f, 0f, 3f))
 
 private class BasicLightingDiffuse {
 
@@ -101,7 +101,11 @@ private class BasicLightingDiffuse {
         //  all upcoming GL_TEXTURE_2D operations now have effect on this texture object
         glBindTexture(GL_TEXTURE_2D, texture)
 
-        val image = readImage("textures/perlin_noise.png")
+        val image = readImage(
+            "textures/perlin_noise.png"
+//            "textures/perlin_noise2.png"
+//            "textures/worley-noise.jpg"
+        )
         image.toBuffer().use {
             // ByteBuffered images used BRG instead RGB
             gln.texture.glTexImage2D(GL_RGB, image.width, image.height, GL12.GL_BGR, GL_UNSIGNED_BYTE, it)

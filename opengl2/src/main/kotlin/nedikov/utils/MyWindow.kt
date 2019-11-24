@@ -2,17 +2,14 @@ package nedikov.utils
 
 import glm_.f
 import glm_.vec2.Vec2d
-import nedikov.camera.FreeCamera
-import nedikov.camera.FreeCamera.Movement.*
-import nedikov.camera.MouseController
-import nedikov.camera.MouseEvent
-import nedikov.camera.MouseKey
+import nedikov.camera.*
+import nedikov.camera.Camera.Movement.*
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL
 import uno.glfw.GlfwWindow
 import uno.glfw.glfw
 
-class MyWindow(title: String, private val camera: FreeCamera) {
+class MyWindow(title: String, private val camera: Camera) {
     init {
         with(glfw) {
             init()
