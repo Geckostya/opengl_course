@@ -3,11 +3,8 @@ package nedikov.program
 import glm_.vec2.Vec2
 import glm_.vec3.Vec3
 import gln.glClearColor
-import imgui.ImGui
-import imgui.WindowFlags
-import imgui.functionalProgramming
+import imgui.*
 import imgui.impl.LwjglGL3
-import imgui.or
 import nedikov.camera.OrbitCamera
 import nedikov.program.ShaderLibrary.lamp
 import nedikov.program.ShaderLibrary.phong
@@ -45,6 +42,7 @@ private class BasicLightingDiffuse {
         floor.model.translate_(0f, 0f, -0.1f).scale_(10f, 10f, 0.2f)
 
         meshes.forEach { it.init() }
+        IO.mouseDrawCursor = false
     }
 
     var showOverlay = true
@@ -54,10 +52,12 @@ private class BasicLightingDiffuse {
             WindowFlags.NoFocusOnAppearing or WindowFlags.NoBringToFrontOnFocus
 
     fun run() {
+        LwjglGL3.newFrame()
         while (window.open) {
 
             window.processFrame()
-            LwjglGL3.newFrame()
+            LwjglGL3.newFrameWithCursor()
+
             with(ImGui) {
                 setNextWindowPos(Vec2(10))
                 functionalProgramming.withWindow(
@@ -65,6 +65,7 @@ private class BasicLightingDiffuse {
                     ::showOverlay,
                     flags
                 ) {
+                    text("fps: ${window.fps}")
                     text("Moving: WASD or LMC drag")
                     text("Projection: O/P")
                     text("Zoom: Z/X")

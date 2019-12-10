@@ -3,6 +3,7 @@ package nedikov.utils
 import glm_.f
 import glm_.func.rad
 import glm_.glm
+import glm_.i
 import glm_.mat4x4.Mat4
 import glm_.vec2.Vec2d
 import imgui.impl.LwjglGL3
@@ -67,8 +68,12 @@ class MyWindow(title: String, private val camera: Camera) {
     private var projection = Projection.Perspective
     val projectionMatrix = Mat4()
 
-    var deltaTime = 0f    // time between current frame and last frame
-    var lastFrame = 0f
+    private var deltaTime = 0f    // time between current frame and last frame
+    private var lastFrame = 0f
+
+    var fps = 0
+    private var fps10 = 0
+    private var frameCounter = 0
 
     init {
         updateProjectionMatrix()
@@ -96,6 +101,13 @@ class MyWindow(title: String, private val camera: Camera) {
         deltaTime = currentFrame - lastFrame
         lastFrame = currentFrame
 
+        fps10 += (1 / deltaTime).i
+        if (++frameCounter == 10) {
+            fps = fps10 / 10
+            frameCounter = 0
+            fps10 = 0
+        }
+
         with(window) {
             if (pressed(GLFW.GLFW_KEY_ESCAPE)) close = true
 
@@ -118,7 +130,7 @@ class MyWindow(title: String, private val camera: Camera) {
         }
     }
 
-    fun setProjection(projection: Projection) {
+    private fun setProjection(projection: Projection) {
         if (projection != this.projection) {
             this.projection = projection
             updateProjectionMatrix()
