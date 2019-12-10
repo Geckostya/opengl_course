@@ -1,6 +1,9 @@
 package nedikov.utils
 
 import glm_.f
+import glm_.func.rad
+import glm_.glm
+import glm_.mat4x4.Mat4
 import glm_.vec2.Vec2d
 import nedikov.camera.*
 import nedikov.camera.Camera.Movement.*
@@ -43,7 +46,10 @@ class MyWindow(title: String, private val camera: Camera) {
     private val window: GlfwWindow = GlfwWindow(windowSize, title).apply {
         makeContextCurrent()
         show()
-        framebufferSizeCallback = { size -> gln.glViewport(size) }
+        framebufferSizeCallback = { size ->
+            gln.glViewport(size)
+            updateProjectionMatrix()
+        }
 
         mouseButtonCallback = { button, action, mod -> controller.buttonAction(MouseEvent(button,action, mod))}
         cursorPosCallback = controller::mouseMove
@@ -55,8 +61,17 @@ class MyWindow(title: String, private val camera: Camera) {
         GL.createCapabilities()
     }
 
+    enum class Projection { Perspective, Orthographic }
+
+    private var projection = Projection.Perspective
+    val projectionMatrix = Mat4()
+
     var deltaTime = 0f    // time between current frame and last frame
     var lastFrame = 0f
+
+    init {
+        updateProjectionMatrix()
+    }
 
     val open: Boolean
         get() = window.open
@@ -86,7 +101,37 @@ class MyWindow(title: String, private val camera: Camera) {
             if (pressed(GLFW.GLFW_KEY_S)) camera.processKeyboard(Backward, deltaTime)
             if (pressed(GLFW.GLFW_KEY_A)) camera.processKeyboard(Left, deltaTime)
             if (pressed(GLFW.GLFW_KEY_D)) camera.processKeyboard(Right, deltaTime)
+
+            if (pressed(GLFW.GLFW_KEY_Z)) {
+                camera.zoom(0.3f)
+                updateProjectionMatrix()
+            }
+            if (pressed(GLFW.GLFW_KEY_X)) {
+                camera.zoom(-0.3f)
+                updateProjectionMatrix()
+            }
+
+            if (pressed(GLFW.GLFW_KEY_P)) setProjection(Projection.Perspective)
+            if (pressed(GLFW.GLFW_KEY_O)) setProjection(Projection.Orthographic)
         }
     }
 
+    fun setProjection(projection: Projection) {
+        if (projection != this.projection) {
+            this.projection = projection
+            updateProjectionMatrix()
+        }
+    }
+
+    private fun updateProjectionMatrix() {
+        when (projection) {
+            Projection.Perspective ->
+                glm.perspective(projectionMatrix, camera.zoom.rad, aspect, 0.1f, 100f)
+            Projection.Orthographic -> {
+                val x = camera.zoom / 15f * aspect
+                val y = camera.zoom / 15f
+                glm.ortho(projectionMatrix, -x, x, -y, y, 0.1f, 100f)
+            }
+        }
+    }
 }

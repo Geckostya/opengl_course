@@ -38,6 +38,10 @@ abstract class Camera(
     // Calculates the front vector from the Camera's (updated) Eular Angles
     abstract fun updateCameraVectors();
 
+    fun zoom(offset: Float) {
+        zoom = glm.clamp(zoom - offset, 1f, 45f)
+    }
+
     enum class Movement { Forward, Backward, Left, Right }
 
 

@@ -51,7 +51,6 @@ class FreeCamera(
 
     /** Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis    */
     override fun processMouseScroll(yOffset: Float) {
-        zoom = glm.clamp(zoom - yOffset, 1f, 45f)
     }
 
     // Calculates the front vector from the Camera's (updated) Eular Angles
