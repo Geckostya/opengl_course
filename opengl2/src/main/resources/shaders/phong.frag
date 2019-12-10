@@ -35,7 +35,7 @@ vec3 specular(vec3 norm, vec3 lightDir) {
 }
 
 vec3 light() {
-    vec3 norm = normalize(Normal);
+    vec3 norm = normalize(FragPos);
     vec3 lightDir = normalize(u_lightPos - FragPos);
     return ambient() + diffuse(norm, lightDir) + specular(norm, lightDir);
 }
