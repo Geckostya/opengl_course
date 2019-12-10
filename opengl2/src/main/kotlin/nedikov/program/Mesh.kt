@@ -19,7 +19,7 @@ import org.lwjgl.opengl.GL30.*
 import uno.buffer.destroyBuf
 import uno.glsl.glUseProgram
 
-class Mesh(private val vertices: FloatArray, private val indices: IntArray) {
+class Mesh(val vertices: FloatArray, val indices: IntArray) {
 
     val color: Vec3 = Vec3()
 

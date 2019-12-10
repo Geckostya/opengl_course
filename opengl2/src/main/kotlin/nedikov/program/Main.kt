@@ -51,6 +51,8 @@ private class BasicLightingDiffuse {
     val depthMapFBO: Int
     val depthMap: Int
 
+    val sceneAABB = AABB(Vec3(Float.MAX_VALUE), Vec3(-Float.MAX_VALUE))
+
     init {
         glEnable(GL_DEPTH_TEST)
         cube.color.put(1f, 0.5f, 0.31f)
@@ -59,7 +61,10 @@ private class BasicLightingDiffuse {
         floor.color.put(0.8f)
         floor.model.translate_(0f, 0f, -0.1f).scale_(10f, 10f, 0.2f)
 
-        meshes.forEach { it.init() }
+        meshes.forEach {
+            it.init()
+            sceneAABB.put(it.vertices, 8)
+        }
 
         depthMapFBO = glGenFramebuffers()
 

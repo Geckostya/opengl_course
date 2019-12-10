@@ -34,17 +34,11 @@ float specular(vec3 norm, vec3 lightDir) {
     return specularStrength * spec;
 }
 float shadow() {
-    // perform perspective divide
     vec3 projCoords = FragPosLightSpace.xyz / FragPosLightSpace.w;
-    // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
-    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
     float closestDepth = texture(u_shadowMap, projCoords.xy).r;
-    // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
-    // check whether current frag pos is in shadow
     float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
-
     return shadow;
 }
 
