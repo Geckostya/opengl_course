@@ -26,6 +26,18 @@ class MyWindow(title: String, private val camera: Camera) {
                 camera.processMouseMovement(offset)
             }
         }
+
+        override fun dragStopped() {
+            if (press?.key == MouseKey.Left) {
+                window.cursor = GlfwWindow.Cursor.Normal
+            }
+        }
+
+        override fun dragStarted() {
+            if (press?.key == MouseKey.Left) {
+                window.cursor = GlfwWindow.Cursor.Disabled
+            }
+        }
     }
 
     private val window: GlfwWindow = GlfwWindow(windowSize, title).apply {
@@ -37,7 +49,7 @@ class MyWindow(title: String, private val camera: Camera) {
         cursorPosCallback = controller::mouseMove
         scrollCallback = { offset -> camera.processMouseScroll(offset.y.f) }
 
-        cursor = GlfwWindow.Cursor.Disabled
+        cursor = GlfwWindow.Cursor.Normal
 
     }.also {
         GL.createCapabilities()

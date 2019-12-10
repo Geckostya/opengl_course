@@ -4,7 +4,8 @@
 
 layout (location = FRAG_COLOR) out vec4 fragColor;
 
+uniform vec3 u_objectColor;
 
 void main() {
-    fragColor = vec4(1.0f);
+    fragColor = vec4(u_objectColor, 1.0f);
 }

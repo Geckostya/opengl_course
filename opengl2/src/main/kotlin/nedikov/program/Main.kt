@@ -59,7 +59,7 @@ private class BasicLightingDiffuse {
     val vao = intBufferBig<VA>()
 
     // lighting
-    val lightPos = Vec3(1.2f, 1f, 2f)
+    val lightDir = Vec3(-2, -1.5, -1).normalizeAssign()
 
     init {
 
@@ -115,27 +115,14 @@ private class BasicLightingDiffuse {
     }
 
     inner class Phong : Shader("phong") {
-        val objCol  = glGetUniformLocation(name, "u_objectColor")
         val lgtCol  = glGetUniformLocation(name, "u_lightColor")
-        val lgtPos  = glGetUniformLocation(name, "u_lightPos")
+        val lgtDir  = glGetUniformLocation(name, "u_lightDir")
         val viewPos = glGetUniformLocation(name, "u_viewPos")
-        val time = glGetUniformLocation(name, "u_time")
-        init {
-            usingProgram(name) {
-                GL20.glUniform1i(
-                    glGetUniformLocation(name, "u_noise"),
-                    semantic.sampler.DIFFUSE
-                )
-            }
-        }
     }
 
     inner class Lamp : Shader("lamp")
 
     fun run() {
-
-        val startTime = glfw.time
-
         while (window.open) {
 
             window.processFrame()
@@ -154,10 +141,9 @@ private class BasicLightingDiffuse {
             // be sure to activate shader when setting uniforms/drawing objects
             glUseProgram(phong)
 
-            glUniform(phong.time, (glfw.time - startTime) * 0.3f)
             glUniform3f(phong.objCol, 1f, 0.5f, 0.31f)
             glUniform3f(phong.lgtCol, 1f)
-            glUniform3f(phong.lgtPos, lightPos)
+            glUniform3f(phong.lgtDir, lightDir)
             glUniform3f(phong.viewPos, camera.position)
 
             // view/projection transformations
@@ -179,14 +165,28 @@ private class BasicLightingDiffuse {
 
             glUniform(lamp.proj, projection)
             glUniform(lamp.view, view)
-            model = model
-                .translate(lightPos)
-                .scale(0.2f) // a smaller cube
+            model = Mat4().scale(0.2f)
+                .translate(Vec3(3, 0, 0))
             glUniform(lamp.model, model)
+            glUniform(lamp.objCol, Vec3(1, 0, 0))
 
             glBindVertexArray(vao[VA.Light])
-            glDrawElements(GL_TRIANGLES, indicesCube.size / 2, GL_UNSIGNED_INT)
+            glDrawElements(GL_TRIANGLES, indicesCube.size, GL_UNSIGNED_INT)
 
+            model = Mat4().scale(0.2f)
+                .translate(Vec3(0, 3, 0)) // a smaller cube
+            glUniform(lamp.model, model)
+            glUniform(lamp.objCol, Vec3(0, 1, 0))
+
+            glDrawElements(GL_TRIANGLES, indicesCube.size, GL_UNSIGNED_INT)
+
+
+            model = Mat4().scale(0.2f)
+                .translate(Vec3(0, 0, 3)) // a smaller cube
+            glUniform(lamp.model, model)
+            glUniform(lamp.objCol, Vec3(0, 0, 1))
+
+            glDrawElements(GL_TRIANGLES, indicesCube.size, GL_UNSIGNED_INT)
             window.swapAndPoll()
         }
     }

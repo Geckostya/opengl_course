@@ -8,7 +8,7 @@ import glm_.vec3.Vec3
 
 abstract class Camera(
     val position: Vec3 = Vec3(),
-    var worldUp: Vec3 = Vec3(0f, 1f, 0f),
+    var worldUp: Vec3 = Vec3(0f, 0f, 1f),
     var yaw: Float = (-90f).rad,
     var pitch: Float = 0f
 ) {
@@ -18,7 +18,7 @@ abstract class Camera(
     var right = Vec3()
 
     var movementSpeed = 2.5f
-    var mouseSensitivity = 0.001f
+    var mouseSensitivity = 0.003f
     var zoom = 45f
 
     /** Returns the view matrix calculated using Eular Angles and the LookAt Matrix */
