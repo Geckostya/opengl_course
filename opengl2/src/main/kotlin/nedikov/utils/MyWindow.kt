@@ -5,6 +5,7 @@ import glm_.func.rad
 import glm_.glm
 import glm_.mat4x4.Mat4
 import glm_.vec2.Vec2d
+import imgui.impl.LwjglGL3
 import nedikov.camera.*
 import nedikov.camera.Camera.Movement.*
 import org.lwjgl.glfw.GLFW
@@ -71,6 +72,7 @@ class MyWindow(title: String, private val camera: Camera) {
 
     init {
         updateProjectionMatrix()
+        LwjglGL3.init(window, false)
     }
 
     val open: Boolean

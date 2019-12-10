@@ -16,6 +16,7 @@ import org.lwjgl.opengl.GL11.GL_TRIANGLES
 import org.lwjgl.opengl.GL11.GL_UNSIGNED_INT
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL30.*
+import uno.buffer.destroyBuf
 import uno.glsl.glUseProgram
 
 class Mesh(private val vertices: FloatArray, private val indices: IntArray,
@@ -68,5 +69,6 @@ class Mesh(private val vertices: FloatArray, private val indices: IntArray,
     fun dispose() {
         glDeleteVertexArrays(vertexArrayObject)
         glDeleteBuffers(buffers)
+        destroyBuf(buffers)
     }
 }

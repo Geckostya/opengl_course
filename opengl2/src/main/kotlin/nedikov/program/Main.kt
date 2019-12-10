@@ -1,7 +1,13 @@
 package nedikov.program
 
+import glm_.vec2.Vec2
 import glm_.vec3.Vec3
 import gln.glClearColor
+import imgui.ImGui
+import imgui.WindowFlags
+import imgui.functionalProgramming
+import imgui.impl.LwjglGL3
+import imgui.or
 import nedikov.camera.OrbitCamera
 import nedikov.program.ShaderLibrary.lamp
 import nedikov.program.ShaderLibrary.phong
@@ -41,9 +47,29 @@ private class BasicLightingDiffuse {
         meshes.forEach { it.init() }
     }
 
+    var showOverlay = true
+    val flags = WindowFlags.NoTitleBar or WindowFlags.NoResize or
+            WindowFlags.AlwaysAutoResize or WindowFlags.NoMove or
+            WindowFlags.NoSavedSettings or WindowFlags.NoInputs or
+            WindowFlags.NoFocusOnAppearing or WindowFlags.NoBringToFrontOnFocus
+
     fun run() {
         while (window.open) {
+
             window.processFrame()
+            LwjglGL3.newFrame()
+            with(ImGui) {
+                setNextWindowPos(Vec2(10))
+                functionalProgramming.withWindow(
+                    "Controls",
+                    ::showOverlay,
+                    flags
+                ) {
+                    text("Moving: WASD or LMC drag")
+                    text("Projection: O/P")
+                    text("Zoom: Z/X")
+                }
+            }
 
             glEnable(GL_CULL_FACE)
             glCullFace(GL_BACK)
@@ -54,11 +80,14 @@ private class BasicLightingDiffuse {
 
             meshes.forEach { it.draw(camera, window.projectionMatrix) }
 
+            ImGui.render()
             window.swapAndPoll()
         }
     }
 
     fun end() {
+        LwjglGL3.shutdown()
+
         glDeletePrograms(phong, lamp)
 
         meshes.forEach { it.dispose() }
