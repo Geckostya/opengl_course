@@ -8,7 +8,7 @@ import glm_.vec3.Vec3
 
 abstract class Camera(
     val position: Vec3 = Vec3(),
-    var worldUp: Vec3 = Vec3(0f, 0f, 1f),
+    var worldUp: Vec3 = nedikov.utils.worldUp,
     var yaw: Float = (-90f).rad,
     var pitch: Float = 0f
 ) {

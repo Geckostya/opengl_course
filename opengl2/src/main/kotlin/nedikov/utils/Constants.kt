@@ -1,8 +1,12 @@
 package nedikov.utils
 
 import glm_.vec2.Vec2i
+import glm_.vec3.Vec3
 import glm_.vec4.Vec4
 
+val zero = Vec3(0f)
+
+val worldUp = Vec3(0f, 0f, 1f)
 
 val clearColor0 = Vec4(0.1f, 0.1f, 0.1f, 1f)
 

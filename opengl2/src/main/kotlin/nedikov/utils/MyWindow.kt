@@ -6,6 +6,7 @@ import glm_.glm
 import glm_.i
 import glm_.mat4x4.Mat4
 import glm_.vec2.Vec2d
+import glm_.vec2.Vec2i
 import imgui.impl.LwjglGL3
 import nedikov.camera.*
 import nedikov.camera.Camera.Movement.*
@@ -85,6 +86,9 @@ class MyWindow(title: String, private val camera: Camera) {
 
     val aspect: Float
         get() = window.aspect
+
+    val size: Vec2i
+        get() = window.size
 
     fun end() {
         window.destroy()

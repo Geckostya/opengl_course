@@ -11,17 +11,21 @@ layout (location = TEX_COORD) in vec2 aTexCoord;
 in vec2 texCoord;
 
 uniform mat4 u_model;
-uniform mat4 u_view;
-uniform mat4 u_projection;
+uniform mat4 u_projectionView;
+uniform mat4 u_lightSpaceMatrix;
 
 out vec3 FragPos;
 out vec3 Normal;
 out vec2 TexCoord;
+out vec4 FragPosLightSpace;
 
 void main() {
-    FragPos = (u_model * vec4(aPos, 1.0f)).xyz;
+    vec4 modelPos = (u_model * vec4(aPos, 1.0f));
+    FragPos = modelPos.xyz;
     Normal = mat3(transpose(inverse(u_model))) * aNormal;
     TexCoord = aTexCoord;
 
-    gl_Position = u_projection * (u_view * vec4(FragPos, 1.0f));
+    FragPosLightSpace = u_lightSpaceMatrix * vec4(FragPos, 1.0);
+
+    gl_Position = u_projectionView * modelPos;
 }

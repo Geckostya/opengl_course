@@ -10,8 +10,8 @@ import gln.uniform.glUniform
 import gln.uniform.glUniform3f
 import gln.vertexArray.glEnableVertexAttribArray
 import gln.vertexArray.glVertexAttribPointer
-import nedikov.camera.Camera
 import nedikov.program.ShaderLibrary.phong
+import nedikov.program.ShaderLibrary.simpleDepth
 import org.lwjgl.opengl.GL11.GL_TRIANGLES
 import org.lwjgl.opengl.GL11.GL_UNSIGNED_INT
 import org.lwjgl.opengl.GL15.*
@@ -19,8 +19,7 @@ import org.lwjgl.opengl.GL30.*
 import uno.buffer.destroyBuf
 import uno.glsl.glUseProgram
 
-class Mesh(private val vertices: FloatArray, private val indices: IntArray,
-           private val dirLight: DirectionalLight) {
+class Mesh(private val vertices: FloatArray, private val indices: IntArray) {
 
     val color: Vec3 = Vec3()
 
@@ -50,18 +49,20 @@ class Mesh(private val vertices: FloatArray, private val indices: IntArray,
         glEnableVertexAttribArray(glf.pos3_nor3_tc2)
     }
 
-    fun draw(camera: Camera, projection: Mat4) {
-        glUseProgram(phong)
-
+    fun drawPhong() {
         glUniform3f(phong.objCol, color)
-        glUniform3f(phong.lgtCol, dirLight.color)
-        glUniform3f(phong.lgtDir, dirLight.direction)
-        glUniform3f(phong.viewPos, camera.position)
-
-        glUniform(phong.proj, projection)
-        glUniform(phong.view, camera.viewMatrix)
         glUniform(phong.model, model)
 
+        drawElements()
+    }
+
+    fun drawShadows() {
+        glUniform(simpleDepth.model, model)
+
+        drawElements()
+    }
+
+    private fun drawElements() {
         glBindVertexArray(vertexArrayObject)
         glDrawElements(GL_TRIANGLES, indices.size, GL_UNSIGNED_INT)
     }
