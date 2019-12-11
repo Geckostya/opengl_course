@@ -9,7 +9,7 @@ import glm_.vec2.Vec2d
 import nedikov.camera.Camera.Movement.*
 import kotlin.math.sqrt
 
-class OrbitCamera : Camera(yaw = 125f.rad, pitch = 25f.rad) {
+class OrbitCamera : Camera(yaw = -0.4f, pitch = 0.5f) {
 
     var distance = 5f
 
@@ -42,13 +42,14 @@ class OrbitCamera : Camera(yaw = 125f.rad, pitch = 25f.rad) {
     override fun updateCameraVectors() {
         position.put(
             x = yaw.cos * pitch.cos,
-            y = pitch.sin,
-            z = yaw.sin * pitch.cos
+            y = -yaw.sin * pitch.cos,
+            z = pitch.sin
         ).normalizeAssign() *= distance
 
-        front = (-position).normalizeAssign()
-        right put (front cross worldUp).normalizeAssign()
-        up put (right cross front).normalizeAssign()
+        front.put(position).timesAssign(-1)
+        front.normalizeAssign()
+        right.put(front).crossAssign(worldUp).normalizeAssign()
+        up.put(right).crossAssign(front).normalizeAssign()
     }
 
 }

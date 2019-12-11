@@ -140,8 +140,8 @@ private class BasicLightingDiffuse {
 
             window.processFrame()
 
-            glEnable(GL_CULL_FACE)
-            glCullFace(GL_BACK)
+//            glEnable(GL_CULL_FACE)
+//            glCullFace(GL_BACK)
 
             // render
             glClearColor(clearColor0)
@@ -185,7 +185,7 @@ private class BasicLightingDiffuse {
             glUniform(lamp.model, model)
 
             glBindVertexArray(vao[VA.Light])
-            glDrawElements(GL_TRIANGLES, indicesCube.size / 2, GL_UNSIGNED_INT)
+            glDrawElements(GL_TRIANGLES, indicesCube.size, GL_UNSIGNED_INT)
 
             window.swapAndPoll()
         }
