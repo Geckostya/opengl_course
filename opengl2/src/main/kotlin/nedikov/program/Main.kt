@@ -30,6 +30,8 @@ import uno.buffer.use
 import uno.glfw.glfw
 import uno.glsl.glDeletePrograms
 import uno.glsl.glUseProgram
+import kotlin.math.cos
+import kotlin.math.sin
 
 fun main() {
     with(BasicLightingDiffuse()) {
@@ -153,6 +155,9 @@ private class BasicLightingDiffuse {
 
             // be sure to activate shader when setting uniforms/drawing objects
             glUseProgram(phong)
+
+            lightPos.x = 3 * sin(glfw.time / 3)
+            lightPos.y = 3 * cos(glfw.time / 3)
 
             glUniform(phong.time, (glfw.time - startTime) * 0.3f)
             glUniform3f(phong.objCol, 1f, 0.5f, 0.31f)
