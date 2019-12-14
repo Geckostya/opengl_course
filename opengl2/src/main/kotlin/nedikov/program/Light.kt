@@ -11,9 +11,18 @@ abstract class Light(val color: Vec3) {
 }
 
 class DirectionalLight(val direction: Vec3, color: Vec3) : Light(color) {
-    override val viewMatrix = glm.lookAt(
-        direction * (-25),
-        zero,
-        worldUp
-    )
+    override val viewMatrix = Mat4()
+    init {
+        update()
+    }
+
+    fun update() {
+        direction.normalizeAssign()
+        glm.lookAt(
+            viewMatrix,
+            direction * (-25),
+            zero,
+            worldUp
+        )
+    }
 }

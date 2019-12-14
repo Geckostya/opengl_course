@@ -21,6 +21,9 @@ import org.lwjgl.opengl.GL11.glClear
 import org.lwjgl.opengl.GL11.glViewport
 import org.lwjgl.opengl.GL13.GL_TEXTURE0
 import org.lwjgl.opengl.GL13.glActiveTexture
+import uno.glfw.glfw
+import kotlin.math.cos
+import kotlin.math.sin
 
 
 fun main() {
@@ -36,17 +39,18 @@ private class BasicLightingDiffuse {
 
     val window = MyWindow("Phong shader", camera)
 
-    val dirLight = DirectionalLight(Vec3(-2f, -1.5f, -2.4f).normalizeAssign(), Vec3(1f))
+    val dirLight = DirectionalLight(Vec3(1f), Vec3(1f))
 
     val cube = Mesh(verticesCube, indicesCube)
     val floor = Mesh(verticesCube, indicesCube)
+    val sun = Mesh(verticesCube, indicesCube, isUnlit = true)
 
-    val meshes = arrayOf(cube, floor)
+    val meshes = arrayOf(cube, floor, sun)
 
     val projectionViewMatrix = Mat4()
 
     val f = 8f
-    val lightProjectionViewMatrix = glm.ortho(-f, f, -f, f, 0f, 100f) * dirLight.viewMatrix
+    val lightProjectionViewMatrix = Mat4()
 
     val depthMapFBO: Int
     val depthMap: Int
@@ -61,9 +65,11 @@ private class BasicLightingDiffuse {
         floor.color.put(0.8f)
         floor.model.translate_(0f, 0f, -0.1f).scale_(10f, 10f, 0.2f)
 
+        sun.color.put(1, 1, 0)
+
         meshes.forEach {
             it.init()
-            sceneAABB.put(it.vertices, 8)
+            if (it !== sun) sceneAABB.put(it.model, it.vertices, 8)
         }
 
         depthMapFBO = glGenFramebuffers()
@@ -96,6 +102,7 @@ private class BasicLightingDiffuse {
 
     fun run() {
         LwjglGL3.newFrame()
+//        updateLigth()
         while (window.open) {
 
             window.processFrame()
@@ -115,8 +122,10 @@ private class BasicLightingDiffuse {
                 }
             }
 
+
             glEnable(GL_CULL_FACE)
 
+            updateLigth()
             renderShadowPass()
             renderFinalPass()
 
@@ -153,15 +162,32 @@ private class BasicLightingDiffuse {
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, depthMap)
 
-        meshes.forEach { it.drawPhong() }
+        meshes.forEach {
+            if (it.isUnlit) unlit.use(projectionViewMatrix) // unlit at the end of the list
+            it.draw()
+        }
+    }
+
+    private fun updateLigth() {
+        val angle = glfw.time / 3
+        dirLight.direction.x = cos(angle)
+        dirLight.direction.y = sin(angle)
+        dirLight.direction.z = -0.65f
+        dirLight.update()
+
+        val b = sceneAABB.bounds(dirLight.viewMatrix)
+        glm.ortho(lightProjectionViewMatrix, b.x, b.y, b.z, b.w, 0f, 100f).times_(dirLight.viewMatrix)
+
+        sun.model.put(1f).translate_(dirLight.direction * -15).rotate_(angle, worldUp)
     }
 
     fun end() {
         LwjglGL3.shutdown()
 
-        glDeletePrograms(phong, unlit)
+        glDeletePrograms(phong, simpleDepth, unlit)
 
         meshes.forEach { it.dispose() }
+
         window.end()
     }
 

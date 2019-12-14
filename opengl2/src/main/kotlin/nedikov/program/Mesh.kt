@@ -12,14 +12,14 @@ import gln.vertexArray.glEnableVertexAttribArray
 import gln.vertexArray.glVertexAttribPointer
 import nedikov.program.ShaderLibrary.phong
 import nedikov.program.ShaderLibrary.simpleDepth
+import nedikov.program.ShaderLibrary.unlit
 import org.lwjgl.opengl.GL11.GL_TRIANGLES
 import org.lwjgl.opengl.GL11.GL_UNSIGNED_INT
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL30.*
 import uno.buffer.destroyBuf
-import uno.glsl.glUseProgram
 
-class Mesh(val vertices: FloatArray, val indices: IntArray) {
+class Mesh(val vertices: FloatArray, val indices: IntArray, val isUnlit: Boolean = false) {
 
     val color: Vec3 = Vec3()
 
@@ -45,18 +45,35 @@ class Mesh(val vertices: FloatArray, val indices: IntArray) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[Buffer.Element])
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW)
 
-        glVertexAttribPointer(glf.pos3_nor3_tc2)
-        glEnableVertexAttribArray(glf.pos3_nor3_tc2)
+        if (isUnlit) {
+            glVertexAttribPointer(glf.pos3_nor3_tc2[0])
+            glEnableVertexAttribArray(glf.pos3_nor3_tc2[0])
+        } else {
+            glVertexAttribPointer(glf.pos3_nor3_tc2)
+            glEnableVertexAttribArray(glf.pos3_nor3_tc2)
+        }
     }
 
-    fun drawPhong() {
+    fun draw() {
+        if (isUnlit) drawUnlit() else drawPhong()
+    }
+
+    private fun drawPhong() {
         glUniform3f(phong.objCol, color)
         glUniform(phong.model, model)
 
         drawElements()
     }
 
+    private fun drawUnlit() {
+        glUniform3f(unlit.objCol, color)
+        glUniform(unlit.model, model)
+
+        drawElements()
+    }
+
     fun drawShadows() {
+        if (isUnlit) return
         glUniform(simpleDepth.model, model)
 
         drawElements()
