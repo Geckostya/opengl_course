@@ -36,7 +36,7 @@ abstract class Camera(
     abstract fun processMouseScroll(yOffset: Float)
 
     // Calculates the front vector from the Camera's (updated) Eular Angles
-    abstract fun updateCameraVectors();
+    abstract fun updateCameraVectors()
 
     fun zoom(offset: Float) {
         zoom = glm.clamp(zoom - offset, 1f, 45f)

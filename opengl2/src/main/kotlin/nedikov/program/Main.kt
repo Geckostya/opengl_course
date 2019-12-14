@@ -150,8 +150,8 @@ private class BasicLightingDiffuse {
 
         phong.use(camera.position, projectionViewMatrix, dirLight, lightProjectionViewMatrix)
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, depthMap);
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, depthMap)
 
         meshes.forEach { it.drawPhong() }
     }
