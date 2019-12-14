@@ -8,7 +8,7 @@ val zero = Vec3(0f)
 
 val worldUp = Vec3(0f, 0f, 1f)
 
-val clearColor0 = Vec4(0.1f, 0.1f, 0.1f, 1f)
+val clearColor0 = Vec4(0.5f, 0.8f, 0.95f, 1f)
 
 val windowSize = Vec2i(1280, 720)
 

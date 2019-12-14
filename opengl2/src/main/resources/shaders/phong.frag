@@ -17,7 +17,7 @@ uniform vec3 u_objectColor;
 uniform sampler2D u_shadowMap;
 
 float ambient() {
-    float ambientStrength = 0.1f;
+    float ambientStrength = 0.25f;
     return ambientStrength;
 }
 
@@ -27,7 +27,7 @@ float diffuse(vec3 norm, vec3 lightNorm) {
 }
 
 float specular(vec3 norm, vec3 lightDir) {
-    float specularStrength = 0.5f;
+    float specularStrength = 0.4f;
     vec3 viewDir = normalize(u_viewPos - FragPos);
     vec3 reflectDir = reflect(lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);

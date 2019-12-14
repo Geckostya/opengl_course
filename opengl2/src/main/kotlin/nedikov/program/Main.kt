@@ -39,13 +39,12 @@ private class BasicLightingDiffuse {
 
     val window = MyWindow("Phong shader", camera)
 
-    val dirLight = DirectionalLight(Vec3(1f), Vec3(1f))
+    val dirLight = DirectionalLight(Vec3(1f), Vec3(1f, 1f, 0.7f))
 
-    val cube = Mesh(verticesCube, indicesCube)
-    val floor = Mesh(verticesCube, indicesCube)
-    val sun = Mesh(verticesCube, indicesCube, isUnlit = true)
+    val floor = Mesh(verticesCube, indicesCube, Vec3(0.1f, 0.8f, 0f))
+    val sun = Mesh(verticesCube, indicesCube, Vec3(1f, 1f, 0), isUnlit = true)
 
-    val meshes = arrayOf(cube, floor, sun)
+    val meshes = mutableListOf<Mesh>()
 
     val projectionViewMatrix = Mat4()
 
@@ -57,15 +56,26 @@ private class BasicLightingDiffuse {
 
     val sceneAABB = AABB(Vec3(Float.MAX_VALUE), Vec3(-Float.MAX_VALUE))
 
+    fun loadMeshes() {
+        meshes.add(floor)
+        floor.model.translate_(0f, 0f, -0.1f).scale_(10f, 10f, 0.2f)
+        meshes.addAll(loadModel("meshes/grass.obj"))
+        meshes.addAll(loadModel("meshes/tree.obj").also {
+            meshes -> meshes.forEach { it.model.translate_(3f, 2f, 0f) }
+        })
+        meshes.addAll(loadModel("meshes/tree2.obj").also {
+                meshes -> meshes.forEach { it.model.translate_(0f, -1.5f, 0f) }
+        })
+        meshes.addAll(loadModel("meshes/tree3.obj").also {
+            meshes -> meshes.forEach { it.model.translate_(-3f, 1f, 0f) }
+        })
+        meshes.add(sun)
+    }
+
     init {
         glEnable(GL_DEPTH_TEST)
-        cube.color.put(1f, 0.5f, 0.31f)
-        cube.model.translate_(0f, 0f, 0.5f)
 
-        floor.color.put(0.8f)
-        floor.model.translate_(0f, 0f, -0.1f).scale_(10f, 10f, 0.2f)
-
-        sun.color.put(1, 1, 0)
+        loadMeshes()
 
         meshes.forEach {
             it.init()
@@ -169,7 +179,7 @@ private class BasicLightingDiffuse {
     }
 
     private fun updateLigth() {
-        val angle = glfw.time / 3
+        val angle = glfw.time / 12
         dirLight.direction.x = cos(angle)
         dirLight.direction.y = sin(angle)
         dirLight.direction.z = -0.65f

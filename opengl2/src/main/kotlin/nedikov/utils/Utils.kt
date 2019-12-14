@@ -1,11 +1,15 @@
 package nedikov.utils
 
+import assimp.Importer
 import glm_.f
 import glm_.vec2.Vec2d
+import glm_.vec3.Vec3
 import imgui.IO
 import imgui.ImGui
 import imgui.impl.LwjglGL3
+import nedikov.program.Mesh
 import uno.glfw.glfw
+import uno.kotlin.uri
 
 // do not change window cursor
 fun LwjglGL3.newFrameWithCursor() {
@@ -47,4 +51,28 @@ fun LwjglGL3.newFrameWithCursor() {
     /*  Start the frame. This call will update the IO.wantCaptureMouse, IO.wantCaptureKeyboard flag that you can use
         to dispatch inputs (or not) to your application.         */
     ImGui.newFrame()
+}
+
+fun loadModel(file: String, defaultColor: Vec3 = Vec3(1f)): List<Mesh> {
+    val meshes = mutableListOf<Mesh>()
+    val scene = Importer().readFile(file.uri) ?: return meshes
+    scene.meshes.forEach { mesh ->
+        val vertices = FloatArray(8 * mesh.numVertices)
+        val indices = IntArray(3 * mesh.numFaces)
+        mesh.vertices.forEachIndexed { i, v ->
+            val n = mesh.normals[i]
+            v.to(vertices, i * 8)
+            n.to(vertices, i * 8 + 3)
+            if (mesh.textureCoords[0].isNotEmpty()) {
+                val tc = mesh.textureCoords[0][i]
+                vertices[i * 8 + 6] = tc[0]
+                vertices[i * 8 + 7] = tc[1]
+            }
+        }
+        repeat(indices.size) { indices[it] = mesh.faces[it / 3][it % 3] }
+
+        val color = scene.materials[mesh.materialIndex].color?.diffuse ?: defaultColor
+        meshes.add(Mesh(vertices, indices, color))
+    }
+    return meshes
 }

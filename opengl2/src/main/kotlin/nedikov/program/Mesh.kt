@@ -19,9 +19,8 @@ import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL30.*
 import uno.buffer.destroyBuf
 
-class Mesh(val vertices: FloatArray, val indices: IntArray, val isUnlit: Boolean = false) {
-
-    val color: Vec3 = Vec3()
+class Mesh(val vertices: FloatArray, val indices: IntArray, val color: Vec3 = Vec3(1f),
+           val isUnlit: Boolean = false) {
 
     var model = Mat4()
 
