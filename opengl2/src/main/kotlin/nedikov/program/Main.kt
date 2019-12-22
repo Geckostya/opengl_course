@@ -19,8 +19,7 @@ import java.nio.IntBuffer
 import org.lwjgl.opengl.GL11.glBindTexture
 import org.lwjgl.opengl.GL11.glClear
 import org.lwjgl.opengl.GL11.glViewport
-import org.lwjgl.opengl.GL13.GL_TEXTURE0
-import org.lwjgl.opengl.GL13.glActiveTexture
+import org.lwjgl.opengl.GL13.*
 import uno.glfw.glfw
 import kotlin.math.cos
 import kotlin.math.sin
@@ -134,6 +133,7 @@ private class BasicLightingDiffuse {
 
 
             glEnable(GL_CULL_FACE)
+            glCullFace(GL_BACK)
 
             updateLigth()
             renderShadowPass()
@@ -149,11 +149,15 @@ private class BasicLightingDiffuse {
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO)
         glClear(GL_DEPTH_BUFFER_BIT)
 
+        glEnable(GL_POLYGON_OFFSET_FILL)
+
+        glPolygonOffset(1f, 1f)
+
         simpleDepth.use(lightProjectionViewMatrix)
 
-        glCullFace(GL_FRONT)
-
         meshes.forEach { it.drawShadows() }
+
+        glDisable(GL_POLYGON_OFFSET_FILL)
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
     }
@@ -164,8 +168,6 @@ private class BasicLightingDiffuse {
         gln.glViewport(window.size)
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         glClearColor(clearColor0)
-
-        glCullFace(GL_BACK)
 
         phong.use(camera.position, projectionViewMatrix, dirLight, lightProjectionViewMatrix)
 
